@@ -1,0 +1,23 @@
+{
+  "files": {
+    "static/css/0.chunk.css": "/wordpress/wp-content/themes/logicrays-react/static/css/0.chunk.css",
+    "static/js/0.chunk.js": "/wordpress/wp-content/themes/logicrays-react/static/js/0.chunk.js",
+    "static/css/0.chunk.css.map": "/wordpress/wp-content/themes/logicrays-react/static/css/0.chunk.css.map",
+    "static/js/0.chunk.js.map": "/wordpress/wp-content/themes/logicrays-react/static/js/0.chunk.js.map",
+    "main.css": "/wordpress/wp-content/themes/logicrays-react/static/css/main.chunk.css",
+    "main.js": "/wordpress/wp-content/themes/logicrays-react/static/js/main.chunk.js",
+    "main.css.map": "/wordpress/wp-content/themes/logicrays-react/static/css/main.chunk.css.map",
+    "main.js.map": "/wordpress/wp-content/themes/logicrays-react/static/js/main.chunk.js.map",
+    "runtime-main.js": "/wordpress/wp-content/themes/logicrays-react/static/js/bundle.js",
+    "runtime-main.js.map": "/wordpress/wp-content/themes/logicrays-react/static/js/bundle.js.map",
+    "index.php": "/wordpress/wp-content/themes/logicrays-react/index.php",
+    "static/media/logo.svg": "/wordpress/wp-content/themes/logicrays-react/static/media/logo.5d5d9eef.svg"
+  },
+  "entrypoints": [
+    "static/js/bundle.js",
+    "static/css/0.chunk.css",
+    "static/js/0.chunk.js",
+    "static/css/main.chunk.css",
+    "static/js/main.chunk.js"
+  ]
+}
