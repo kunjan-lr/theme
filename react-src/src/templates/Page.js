@@ -57,7 +57,7 @@ function Page() {
         .then(result => setSuccessmessage(JSON.parse(result)))
         .catch(error => console.log('error', error));
     }
-    //console.log(data)
+
     return (
         <>
         <section className="default-page mb-5">

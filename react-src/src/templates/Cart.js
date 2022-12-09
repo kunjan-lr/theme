@@ -3,13 +3,42 @@ import React, { useEffect, useState } from "react";
 import NumericInput from 'react-numeric-input';
 import { Link } from "react-router-dom";
 import Table from 'react-bootstrap/Table';
+import WooCommerceRestApi from "@woocommerce/woocommerce-rest-api";
+import Swal from "sweetalert2";
+
+const api = new WooCommerceRestApi({
+  url: process.env.REACT_APP_API_BASE_URL,
+  consumerKey: process.env.REACT_APP_API_CONSUMERKEY,
+  consumerSecret: process.env.REACT_APP_API_CONSUMERSECRET,
+  version: process.env.REACT_APP_API_VERSION
+});
 
 function Cart() {
     let total = 0;
 
     const cartproducts = JSON.parse(window.localStorage.getItem("cartitems"));
     const [updatecart, setUpdatecart] = useState();
+    const [couponamount, setCouponamount] = useState();
     
+    const handleOnSubmit = (e) => {
+      e.preventDefault();
+      const { target } = e;
+
+      const couponCode = Object.fromEntries(new FormData(target))
+      
+      api.get(`coupons?code=${couponCode.coupon_code}`)
+      .then((response) => {
+        setCouponamount(response.data[0].amount)      
+      })
+      .catch((error) => {
+        Swal.fire({
+          icon: "error",
+          title: "Ooops, something went wrong",
+        });
+      });
+      
+    }
+    console.log(couponamount);
     const removeProduct = (event, productid) => {
       setUpdatecart((current) =>
         current.filter((updatecart) => {
@@ -20,7 +49,7 @@ function Cart() {
   
     useEffect(() => {
       cartproducts && setUpdatecart(cartproducts)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
   
     useEffect(() => {
@@ -113,7 +142,12 @@ function Cart() {
             </tbody>
           </Table>
           <div className="d-flex flex-wrap justify-content-between align-items-center">
-            <div className="mt-4"></div>
+            <div className="mt-2">
+              <form className="d-flex" onSubmit={handleOnSubmit}>
+                <input type="text" name="coupon_code" placeholder="Coupon code"/>
+                <button type="submit" className="btn btn-primary mx-2">Apply coupon</button>
+              </form>
+            </div>
             <div className="d-flex">
               <div className="text-right">
                 <label className="text-muted font-weight-normal m-0">

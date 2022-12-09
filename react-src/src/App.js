@@ -17,6 +17,8 @@ import Cart from "./templates/Cart";
 import Checkout from "./templates/Checkout";
 import Team from "./templates/Team";
 import Login from "./templates/Login";
+import Parent from "./templates/Parent";
+import Customform from "./templates/Customform";
 
 function App() {
     return (
@@ -24,6 +26,7 @@ function App() {
             <Router>
                 <Head />
                 <Routes>
+                    <Route path='wordpress/parent' element={<Parent />}/>
                     <Route path='wordpress/' element={<Home />}/>
                     <Route path='wordpress/team' element={<Team />}/>
                     <Route path='wordpress/cart' element={<Cart />}/>
@@ -38,7 +41,8 @@ function App() {
                         <Route path="" element={<Posts />} />
                         <Route path=":postSlug" exact element={<Post />} />
                     </Route>
-                    <Route path="wordpress/my-account" element={<Login />}></Route>                 
+                    <Route path="wordpress/my-account" element={<Login />}></Route>               
+                    <Route path="wordpress/custom-form" element={<Customform />}></Route>               
                 </Routes>
                 <Foot />
             </Router>

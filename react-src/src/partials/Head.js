@@ -7,6 +7,12 @@ function Head() {
   const [data, setData] = useState(null);
   const [logininfo, setLogininfo] = useState();
 
+  const [active, setActive] = useState(false);
+
+  const handleClick = () => {
+    setActive(!active);
+  };
+
   const fetchNavdata=()=>{   
       fetch("/wordpress/wp-json/wp/v2/menu")
       .then(res=>{return(res.json())})
@@ -66,8 +72,11 @@ function Head() {
             <NavLink className="navbar-brand" to="/wordpress/">
               <img src={logo} alt="logo" width={100} />
             </NavLink>
+            <div className="menu-icon" onClick={handleClick}>
+              <i className={active ? "fas fa-times" : "fas fa-bars"}></i>
+            </div>
             <div>
-              <ul className="navbar-nav ml-auto">
+              <ul className={active ? "nav-menu active" : "navbar-nav ml-auto"} >
               {data && data.map((item, i) => {
 
                 const last = item.url.split("/");

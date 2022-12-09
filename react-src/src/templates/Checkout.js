@@ -20,7 +20,9 @@ function Checkout() {
     const [countries, setCountries] = useState();
     const [states, setStates] = useState([]);
     const [paymentgateways, setPaymentgateways] = useState();
+    const [shippingmethods, setShippingmethod] = useState();
     const [state, setState] = useState();
+    const [shipping, setShipping] = useState();
     const [selectedcountry, setSelectedCountry] = useState("");
     const cartproducts = JSON.parse(window.localStorage.getItem("cartitems"));
     // eslint-disable-next-line no-unused-vars
@@ -28,6 +30,10 @@ function Checkout() {
 
     const handleChange = (e, value) => {
       setState(value);
+    };
+
+    const shandleChange = (e, value) => {
+      setShipping(value);
     };
   
     useEffect(() => {
@@ -41,7 +47,7 @@ function Checkout() {
           }
         })
         .catch((error) => {
-          console.log(error?.response?.data, "error with contries");
+          console.log(error?.response?.data, "error with countries");
         });
     }, []);
   
@@ -80,6 +86,13 @@ function Checkout() {
         .catch((error) => {
           console.log(error.response.data);
         });
+    }, []);
+
+    useEffect(() => {
+      api.get("shipping_methods")
+      .then((response) =>{
+        setShippingmethod(response.data)
+      })
     }, []);
   
     const handleOnSubmit = (e) => {
@@ -132,11 +145,29 @@ function Checkout() {
         line_items: datafiltered,
         shipping_lines: [
           {
-            method_id: "free_shipping",
-            method_title: "Free shipping",
+            method_id: orderinfo.shipping_method,
+            method_title: orderinfo.shipping_method_title,
             total: "",
           },
         ],
+        // "coupon_lines":[
+        //   {
+        //   "code":"nov10",
+        //   "discount":"10",
+        //   "meta_data":[
+        //       {
+        //           "key":"coupon_data",
+        //           "value":[
+        //           {
+        //               "id":"186",
+        //               "code":"nov10",
+        //               "amount":"10.00"
+        //           }
+        //           ]
+        //       }
+        //   ]
+        //   }
+        // ],
       };
       //console.log(Object.fromEntries(new FormData(target)))
       api.post("orders", orderInfo)
@@ -227,8 +258,27 @@ function Checkout() {
                   <label>Phone</label>
                   <input name="phone" className="form-control" placeholder="Phone" required />
                 </Form.Field>
-                <div className="wc-payment">
-                <Form.Field className="payment">                      
+                <div className="wc-payment">                
+                <Form.Field className="shipping">
+                <h6>Shipping Methods</h6>                     
+                {shippingmethods &&
+                  shippingmethods.map((element) => {
+                    return (
+                        <>
+                        <Radio
+                          label={<div dangerouslySetInnerHTML={{ __html: element.title }} />}
+                          name="shipping_method"
+                          value={element.id}
+                          checked={shipping?.value === element.id}
+                          onChange={shandleChange}
+                        />
+                        <input type="hidden" name="shipping_method_title" value={element.title}/>
+                        </>
+                    );
+                  })}
+                </Form.Field>
+                <Form.Field className="payment">  
+                <h6>Payment Methods</h6>                    
                 {paymentgateways &&
                   paymentgateways.map((element) => {
                     return (

@@ -60,6 +60,7 @@ function Products() {
             console.log(error.response.data);
         }); 
     },[page]);
+
   return (
     <>
     <section className="section-products">
@@ -80,22 +81,7 @@ function Products() {
                     <ul>
                     <li>
                         {abutton}
-                    </li>
-                    {/* <li>
-                        <a href="/">
-                        <i className="fas fa-heart"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/">
-                        <i className="fas fa-plus"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/">
-                        <i className="fas fa-expand"></i>
-                        </a>
-                    </li> */}
+                    </li>                    
                     </ul>
                 </div>
                 <div className="part-2">

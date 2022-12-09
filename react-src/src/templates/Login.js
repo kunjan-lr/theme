@@ -16,10 +16,6 @@ const api = new WooCommerceRestApi({
     version: process.env.REACT_APP_API_VERSION
 });
 
-// function Userinfo() {
-    // const logindata = JSON.parse(localStorage.getItem("customerinfo"));
-// }
-
 function Login() {
 const [logininfo, setLogininfo] = useState(JSON.parse(localStorage.getItem("customerinfo")));
 const [tokon, setToken] = useState();
@@ -49,7 +45,7 @@ const [page, setpage] = useState(1)
         const requestOptions = {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            Authorizatiocustomerinfon: tokon,
+            Authorization: tokon,
             body: JSON.stringify(userinfo),
         };
         fetch("/wordpress/wp-json/custom-api/login", requestOptions)
@@ -62,14 +58,17 @@ const [page, setpage] = useState(1)
                 title: 'Login Successfully'
             })
         }).catch((error) => {
-            console.log(error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Your login details are not valid, Please check.'
+            })
         });
   }
 
   useEffect(() => {    
     setUserdata(JSON.parse(window.localStorage.getItem("customerinfo")))
     fetchOrders();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [logininfo, page]);
 
   const handleOnSubmitregister = (e) => {
@@ -93,14 +92,14 @@ const [page, setpage] = useState(1)
         const registerOptions = {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            Authorizatiocustomerinfon: tokon,
+            Authorization: tokon,
             body: JSON.stringify(userinfo),
         };
 
         fetch("/wordpress/wp-json/wp/v2/users/register", registerOptions)
         .then((response) => response.json())
         .then((data) => {
-        setRegisterinfo(data)      
+            setRegisterinfo(data)      
             Swal.fire({
             icon: 'success',
             title: 'Registration was Successful'
@@ -112,15 +111,17 @@ const [page, setpage] = useState(1)
   }
   
   const fetchOrders = () => {
-    api.get(`orders?customer=${logininfo ? logininfo['data'].ID : null}`,{
-        per_page: 5,
-        page: page
-    }).then((response) => {                
-        if (response.status === 200) {
-            setOrders(response.data);
-            setPageCount(response.headers['x-wp-totalpages'])
-        }
-    })
+    if(logininfo){
+        api.get(`orders?customer=${logininfo ? logininfo['data'].ID : null}`,{
+            per_page: 5,
+            page: page
+        }).then((response) => {                
+            if (response.status === 200) {
+                setOrders(response.data);
+                setPageCount(response.headers['x-wp-totalpages'])
+            }
+        })
+    }
   }
 
   return (
