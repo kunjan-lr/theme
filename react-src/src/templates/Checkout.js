@@ -1,123 +1,146 @@
+/* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from "react";
 import WooCommerceRestApi from "@woocommerce/woocommerce-rest-api";
-import {
-  Form,
-  Radio,
-  Button,
-} from "semantic-ui-react";
+import { Form, Radio, Button } from "semantic-ui-react";
 import Swal from "sweetalert2";
 
 const api = new WooCommerceRestApi({
-    url: process.env.REACT_APP_API_BASE_URL,
-    consumerKey: process.env.REACT_APP_API_CONSUMERKEY,
-    consumerSecret: process.env.REACT_APP_API_CONSUMERSECRET,
-    version: process.env.REACT_APP_API_VERSION
+  url: process.env.REACT_APP_API_BASE_URL,
+  consumerKey: process.env.REACT_APP_API_CONSUMERKEY,
+  consumerSecret: process.env.REACT_APP_API_CONSUMERSECRET,
+  version: process.env.REACT_APP_API_VERSION,
 });
 
 function Checkout() {
-    let total = 0;
+  let total = 0;
 
-    const [countries, setCountries] = useState();
-    const [states, setStates] = useState([]);
-    const [paymentgateways, setPaymentgateways] = useState();
-    const [shippingmethods, setShippingmethod] = useState();
-    const [state, setState] = useState();
-    const [shipping, setShipping] = useState();
-    const [selectedcountry, setSelectedCountry] = useState("");
-    const cartproducts = JSON.parse(window.localStorage.getItem("cartitems"));
-    // eslint-disable-next-line no-unused-vars
-    const [logininfo, setLogininfo] = useState(JSON.parse(localStorage.getItem("customerinfo")));
+  const [countries, setCountries] = useState();
+  const [states, setStates] = useState([]);
+  const [paymentgateways, setPaymentgateways] = useState();
+  const [shippingmethods, setShippingmethod] = useState();
+  const [state, setState] = useState();
+  const [shipping, setShipping] = useState();
+  const [selectedcountry, setSelectedCountry] = useState("");
+  const cartproducts = JSON.parse(window.localStorage.getItem("cartitems"));
+  const cartitemstotal = JSON.parse(
+    window.localStorage.getItem("cartitemstotal")
+  );
 
-    const handleChange = (e, value) => {
-      setState(value);
-    };
+  const couponcode = window.localStorage.getItem("couponcode");
+  //console.log(couponcode);
+  const [coupona, setCouponAmount] = useState();
+  const [couponid, setCouponId] = useState();
 
-    const shandleChange = (e, value) => {
-      setShipping(value);
-    };
-  
-    useEffect(() => {
+  // eslint-disable-next-line no-unused-vars
+  const [logininfo, setLogininfo] = useState(
+    JSON.parse(localStorage.getItem("customerinfo"))
+  );
+
+  const handleChange = (e, value) => {
+    setState(value);
+  };
+
+  const shandleChange = (e, value) => {
+    setShipping(value);
+  };
+
+  useEffect(() => {
+    api
+      .get("data/countries", {
+        //per_page: 2,
+      })
+      .then((response) => {
+        if (response.status === 200) {
+          setCountries(response.data);
+        }
+      })
+      .catch((error) => {
+        console.log(error?.response?.data, "error with countries");
+      });
+  }, []);
+
+  const handleSelectChange = (event) => {
+    setSelectedCountry(event.target.value);
+  };
+
+  useEffect(() => {
+    if (selectedcountry) {
       api
-        .get("data/countries", {
+        .get(`data/countries/${selectedcountry}`, {
           //per_page: 2,
         })
         .then((response) => {
-          if (response.status === 200) {
-            setCountries(response.data);
-          }
+          if (response?.data?.states?.length) setStates(response?.data?.states);
+          else setStates([]);
         })
         .catch((error) => {
-          console.log(error?.response?.data, "error with countries");
+          console.log(error?.response?.data, "Error with states:");
         });
-    }, []);
-  
-    const handleSelectChange = (event) => {
-      setSelectedCountry(event.target.value);
-    };
-  
-    useEffect(() => {
-      if (selectedcountry) {
-        api
-          .get(`data/countries/${selectedcountry}`, {
-            //per_page: 2,
-          })
-          .then((response) => {
-            if (response?.data?.states?.length) setStates(response?.data?.states);
-            else setStates([]);
-          })
-          .catch((error) => {
-            console.log(error?.response?.data, "Error with states:");
-          });
-      }
-    }, [selectedcountry]);
-  
-    useEffect(() => {
-      api.get("payment_gateways")
-        .then((response) => {
-          const gatways = [];
-          // eslint-disable-next-line array-callback-return
-          response.data && response.data.map((e) => {
-            if(e.enabled === true){
-              gatways.push(e)
-            }
-          })
-          setPaymentgateways(gatways)
-        })
-        .catch((error) => {
-          console.log(error.response.data);
-        });
-    }, []);
+    }
+  }, [selectedcountry]);
 
-    useEffect(() => {
-      api.get("shipping_methods")
-      .then((response) =>{
-        setShippingmethod(response.data)
+  useEffect(() => {
+    api
+      .get("payment_gateways")
+      .then((response) => {
+        const gatways = [];
+        // eslint-disable-next-line array-callback-return
+        response.data &&
+          response.data.map((e) => {
+            if (e.enabled === true) {
+              gatways.push(e);
+            }
+          });
+        setPaymentgateways(gatways);
       })
-    }, []);
-  
-    const handleOnSubmit = (e) => {
-      e.preventDefault();
-      const { target } = e;
-  
-      var datafiltered = cartproducts.map(function (el) {
-        return {
-          product_id: el.id,
-          variation_id: el.variation_id,
-          quantity: el.quantity,
-        };
+      .catch((error) => {
+        console.log(error.response.data);
       });
-      // eslint-disable-next-line no-unused-vars
-      const cartitemstotal = JSON.parse(
-        window.localStorage.getItem("cartitemstotal")
-      );
-      
-      let orderinfo = Object.fromEntries(new FormData(target))
-  
+  }, []);
+
+  useEffect(() => {
+    api.get("shipping_methods").then((response) => {
+      setShippingmethod(response.data);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (couponcode) {
+      api
+        .get(`coupons?code=${couponcode}`)
+        .then((response) => {
+          setCouponAmount(response.data[0].amount);
+          setCouponId(response.data[0].id);
+        })
+        .catch((error) => {
+          Swal.fire({
+            icon: "error",
+            title: "Ooops, something went wrong",
+          });
+        });
+    }
+  }, [couponcode]);
+
+  const handleOnSubmit = (e) => {
+    e.preventDefault();
+    const { target } = e;
+
+    var datafiltered = cartproducts.map(function (el) {
+      return {
+        product_id: el.id,
+        variation_id: el.variation_id,
+        quantity: el.quantity,
+      };
+    });
+
+    let orderinfo = Object.fromEntries(new FormData(target));
+
+    if(coupona && couponid){
       const orderInfo = {
         payment_method: orderinfo.payment_method,
         payment_method_title: orderinfo.payment_method_title,
         set_paid: true,
-        customer_id: logininfo ? logininfo['data'].ID : null,
+        customer_id: logininfo ? logininfo["data"].ID : null,
         billing: {
           first_name: orderinfo.first_name,
           last_name: orderinfo.last_name,
@@ -150,56 +173,138 @@ function Checkout() {
             total: "",
           },
         ],
-        // "coupon_lines":[
+        coupon_lines: [
+          {
+            code: couponcode,
+            discount: coupona,
+            meta_data: [
+              {
+                key: "coupon_data",
+                value: [
+                  {
+                    id: couponid,
+                    code: couponcode,
+                    amount: coupona,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+      api
+      .post("orders", orderInfo)
+      .then((data) => {
+        Swal.fire({
+          icon: "success",
+          title: "Place order Successfully",
+        });
+
+        localStorage.removeItem("cartitems");
+        localStorage.removeItem("cartitemstotal");
+
+        window.location.href = "/wordpress/shop";
+      })
+      .catch((error) => {
+        Swal.fire({
+          icon: "error",
+          title: "Ooops, something went wrong",
+        });
+      });
+    }else{
+      const orderInfo = {
+        payment_method: orderinfo.payment_method,
+        payment_method_title: orderinfo.payment_method_title,
+        set_paid: true,
+        customer_id: logininfo ? logininfo["data"].ID : null,
+        billing: {
+          first_name: orderinfo.first_name,
+          last_name: orderinfo.last_name,
+          address_1: orderinfo.address_1,
+          address_2: orderinfo.address_2,
+          city: orderinfo.city,
+          state: orderinfo.state,
+          postcode: orderinfo.postcode,
+          country: orderinfo.state,
+          email: orderinfo.email,
+          phone: orderinfo.phone,
+        },
+        shipping: {
+          first_name: orderinfo.first_name,
+          last_name: orderinfo.last_name,
+          address_1: orderinfo.address_1,
+          address_2: orderinfo.address_2,
+          city: orderinfo.city,
+          state: orderinfo.state,
+          postcode: orderinfo.postcode,
+          country: orderinfo.state,
+          email: orderinfo.email,
+          phone: orderinfo.phone,
+        },
+        line_items: datafiltered,
+        shipping_lines: [
+          {
+            method_id: orderinfo.shipping_method,
+            method_title: orderinfo.shipping_method_title,
+            total: "",
+          },
+        ],
+        // coupon_lines: [
         //   {
-        //   "code":"nov10",
-        //   "discount":"10",
-        //   "meta_data":[
+        //     code: "nov20",
+        //     discount: "20",
+        //     meta_data: [
         //       {
-        //           "key":"coupon_data",
-        //           "value":[
+        //         key: "coupon_data",
+        //         value: [
         //           {
-        //               "id":"186",
-        //               "code":"nov10",
-        //               "amount":"10.00"
-        //           }
-        //           ]
-        //       }
-        //   ]
-        //   }
+        //             id: "192",
+        //             code: "nov20",
+        //             amount: "20.00",
+        //           },
+        //         ],
+        //       },
+        //     ],
+        //   },
         // ],
       };
-      //console.log(Object.fromEntries(new FormData(target)))
-      api.post("orders", orderInfo)
-        .then((data) => {
-          Swal.fire({
-            icon: "success",
-            title: "Place order Successfully",
-          });
 
-          localStorage.removeItem('cartitems');
-          localStorage.removeItem('cartitemstotal');
-          
-          window.location.href = "/wordpress/shop";
-        })
-        .catch((error) => {
-          Swal.fire({
-            icon: "error",
-            title: "Ooops, something went wrong",
-          });
-        });  
-    };
-  
-    const getSum = (quantity, price) => {
-      const sum = price * quantity;
-      total += sum;
-      return sum.toFixed(2);
-    };
+      api
+      .post("orders", orderInfo)
+      .then((data) => {
+        Swal.fire({
+          icon: "success",
+          title: "Place order Successfully",
+        });
+
+        localStorage.removeItem("cartitems");
+        localStorage.removeItem("cartitemstotal");
+
+        window.location.href = "/wordpress/shop";
+      })
+      .catch((error) => {
+        Swal.fire({
+          icon: "error",
+          title: "Ooops, something went wrong",
+        });
+      });
+    }
+
+    
+    //console.log(Object.fromEntries(new FormData(target)))
+    
+  };
+
+  const getSum = (quantity, price) => {
+    const sum = price * quantity;
+    total += sum;
+    return sum.toFixed(2);
+  };
 
   return (
     <>
-    <section className="default-page mb-5">
-    <div className="container">
+      <section className="default-page mb-5">
+        <div className="container">
           <div className="align-items-center my-5">
             <h1 className="font-weight-light">Checkout</h1>
           </div>
@@ -208,25 +313,57 @@ function Checkout() {
               <Form onSubmit={handleOnSubmit}>
                 <Form.Field>
                   <label>First Name</label>
-                  <input name="first_name" className="form-control" placeholder="First Name" required />
+                  <input
+                    name="first_name"
+                    className="form-control"
+                    placeholder="First Name"
+                    required
+                  />
                 </Form.Field>
                 <Form.Field>
                   <label>Last Name</label>
-                  <input name="last_name" className="form-control" placeholder="Last Name" required />
+                  <input
+                    name="last_name"
+                    className="form-control"
+                    placeholder="Last Name"
+                    required
+                  />
                 </Form.Field>
                 <Form.Field>
                   <label>Address 1</label>
-                  <input name="address_1" className="form-control" placeholder="Address" required />
+                  <input
+                    name="address_1"
+                    className="form-control"
+                    placeholder="Address"
+                    required
+                  />
                 </Form.Field>
                 <Form.Field>
                   <label>Address 2</label>
-                  <input name="address_2" className="form-control" placeholder="Address" required />
+                  <input
+                    name="address_2"
+                    className="form-control"
+                    placeholder="Address"
+                    required
+                  />
                 </Form.Field>
                 <Form.Field>
                   <label>City</label>
-                  <input name="city" className="form-control" placeholder="city" required />
+                  <input
+                    name="city"
+                    className="form-control"
+                    placeholder="city"
+                    required
+                  />
                 </Form.Field>
-                <Form.Field label="Country" name="country" className="custom-select-box" control="select" value={selectedcountry} onChange={handleSelectChange} >
+                <Form.Field
+                  label="Country"
+                  name="country"
+                  className="custom-select-box"
+                  control="select"
+                  value={selectedcountry}
+                  onChange={handleSelectChange}
+                >
                   <option value="">-Select country-</option>
                   {countries &&
                     countries.map((element, index) => {
@@ -236,7 +373,12 @@ function Checkout() {
                     })}
                 </Form.Field>
                 {states.length > 0 ? (
-                  <Form.Field label="State" name="state" className="custom-select-box" control="select">
+                  <Form.Field
+                    label="State"
+                    name="state"
+                    className="custom-select-box"
+                    control="select"
+                  >
                     <option value="">-Select state-</option>
                     {states.length > 0 &&
                       states?.map((state) => {
@@ -248,53 +390,88 @@ function Checkout() {
                 )}
                 <Form.Field>
                   <label>Postcode</label>
-                  <input name="postcode" className="form-control" placeholder="Postcode" required />
+                  <input
+                    name="postcode"
+                    className="form-control"
+                    placeholder="Postcode"
+                    required
+                  />
                 </Form.Field>
                 <Form.Field>
                   <label>Email</label>
-                  <input name="email" className="form-control" placeholder="Email" required />
+                  <input
+                    name="email"
+                    className="form-control"
+                    placeholder="Email"
+                    required
+                  />
                 </Form.Field>
                 <Form.Field>
                   <label>Phone</label>
-                  <input name="phone" className="form-control" placeholder="Phone" required />
+                  <input
+                    name="phone"
+                    className="form-control"
+                    placeholder="Phone"
+                    required
+                  />
                 </Form.Field>
-                <div className="wc-payment">                
-                <Form.Field className="shipping">
-                <h6>Shipping Methods</h6>                     
-                {shippingmethods &&
-                  shippingmethods.map((element) => {
-                    return (
-                        <>
-                        <Radio
-                          label={<div dangerouslySetInnerHTML={{ __html: element.title }} />}
-                          name="shipping_method"
-                          value={element.id}
-                          checked={shipping?.value === element.id}
-                          onChange={shandleChange}
-                        />
-                        <input type="hidden" name="shipping_method_title" value={element.title}/>
-                        </>
-                    );
-                  })}
-                </Form.Field>
-                <Form.Field className="payment">  
-                <h6>Payment Methods</h6>                    
-                {paymentgateways &&
-                  paymentgateways.map((element) => {
-                    return (
-                        <>
-                        <Radio
-                          label={<div dangerouslySetInnerHTML={{ __html: element.title }} />}
-                          name="payment_method"
-                          value={element.id}
-                          checked={state?.value === element.id}
-                          onChange={handleChange}
-                        />
-                        <input type="hidden" name="payment_method_title" value={element.title}/>
-                        </>
-                    );
-                  })}
-                </Form.Field>
+                <div className="wc-payment">
+                  <Form.Field className="shipping">
+                    <h6>Shipping Methods</h6>
+                    {shippingmethods &&
+                      shippingmethods.map((element) => {
+                        return (
+                          <>
+                            <Radio
+                              label={
+                                <div
+                                  dangerouslySetInnerHTML={{
+                                    __html: element.title,
+                                  }}
+                                />
+                              }
+                              name="shipping_method"
+                              value={element.id}
+                              checked={shipping?.value === element.id}
+                              onChange={shandleChange}
+                            />
+                            <input
+                              type="hidden"
+                              name="shipping_method_title"
+                              value={element.title}
+                            />
+                          </>
+                        );
+                      })}
+                  </Form.Field>
+                  <Form.Field className="payment">
+                    <h6>Payment Methods</h6>
+                    {paymentgateways &&
+                      paymentgateways.map((element) => {
+                        return (
+                          <>
+                            <Radio
+                              label={
+                                <div
+                                  dangerouslySetInnerHTML={{
+                                    __html: element.title,
+                                  }}
+                                />
+                              }
+                              name="payment_method"
+                              value={element.id}
+                              checked={state?.value === element.id}
+                              onChange={handleChange}
+                            />
+                            <input
+                              type="hidden"
+                              name="payment_method_title"
+                              value={element.title}
+                            />
+                          </>
+                        );
+                      })}
+                  </Form.Field>
                 </div>
                 <div className="ck-button">
                   <Button type="submit" className="mt-2 btn btn-primary">
@@ -335,7 +512,8 @@ function Checkout() {
                                     Object.keys(product.variation)
                                       .map(function (k) {
                                         return product.variation[k];
-                                      }).join(",")}
+                                      })
+                                      .join(",")}
                                 </div>
                               ) : (
                                 <div className="media-body">{product.name}</div>
@@ -359,15 +537,15 @@ function Checkout() {
               </table>
               <div className="text-right">
                 <p className="text-muted font-weight-normal m-0">
-                  Total price: ${total.toFixed(2)}
+                  Total price: ${cartitemstotal.toFixed(2)}
                 </p>
               </div>
             </div>
           </div>
         </div>
-    </section>
+      </section>
     </>
-  )
+  );
 }
 
-export default Checkout
+export default Checkout;

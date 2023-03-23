@@ -28,17 +28,34 @@ function Cart() {
       
       api.get(`coupons?code=${couponCode.coupon_code}`)
       .then((response) => {
-        setCouponamount(response.data[0].amount)      
+
+        if(response.data[0].discount_type === 'fixed_cart' && total > response.data[0].amount){
+          window.localStorage.setItem('cartitemstotal', total - response.data[0].amount);
+          setCouponamount(response.data[0].amount)
+        }else if(response.data[0].discount_type === 'percent' && total > response.data[0].amount){
+          const discount = total * response.data[0].amount / 100;
+          window.localStorage.setItem('cartitemstotal', total - discount);
+          setCouponamount(discount)
+        }else{
+          window.localStorage.setItem('cartitemstotal', total);
+        }
+
+        window.localStorage.setItem('couponcode', couponCode.coupon_code);
+
+        Swal.fire({
+          icon: "success",
+          title: "The coupon was successfully applied.",
+        });
       })
       .catch((error) => {
         Swal.fire({
           icon: "error",
-          title: "Ooops, something went wrong",
+          title: "Invalid Coupon Code",
         });
-      });
-      
+      });      
     }
-    console.log(couponamount);
+    //console.log(couponamount);
+    
     const removeProduct = (event, productid) => {
       setUpdatecart((current) =>
         current.filter((updatecart) => {
@@ -46,7 +63,7 @@ function Cart() {
         })
       );
     };
-  
+    
     useEffect(() => {
       cartproducts && setUpdatecart(cartproducts)
       // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -54,8 +71,9 @@ function Cart() {
   
     useEffect(() => {
       updatecart && window.localStorage.setItem("cartitems", JSON.stringify(updatecart));
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       window.localStorage.setItem('cartitemstotal', total);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [updatecart])
    
     const getSum = (quantity, price) => {
@@ -63,7 +81,7 @@ function Cart() {
       total += sum;
       return sum.toFixed(2);
     };
-  
+
     const onChangeHandler = (valuer, productid) => {
   
       const localcartproducts = JSON.parse(window.localStorage.getItem("cartitems"));
@@ -156,7 +174,7 @@ function Cart() {
                 <div className="text-large">
                   <strong>
                     <span className="woocommerce-Price-currencySymbol">
-                      ${total.toFixed(2)}
+                      ${ couponamount ? (total-couponamount).toFixed(2) : total.toFixed(2) }
                     </span>
                   </strong>
                 </div>                
