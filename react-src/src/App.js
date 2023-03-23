@@ -19,6 +19,7 @@ import Team from "./templates/Team";
 import Login from "./templates/Login";
 import Parent from "./templates/Parent";
 import Customform from "./templates/Customform";
+import Userform from "./templates/Userform";
 
 function App() {
     return (
@@ -42,7 +43,8 @@ function App() {
                         <Route path=":postSlug" exact element={<Post />} />
                     </Route>
                     <Route path="wordpress/my-account" element={<Login />}></Route>               
-                    <Route path="wordpress/custom-form" element={<Customform />}></Route>               
+                    <Route path="wordpress/custom-form" element={<Customform />}></Route>            
+                    <Route path="wordpress/user-form" element={<Userform />}></Route>            
                 </Routes>
                 <Foot />
             </Router>

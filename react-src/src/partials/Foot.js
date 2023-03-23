@@ -5,7 +5,7 @@ function Foot() {
       <footer className="py-5 bg-dark bg-color">
         <div className="container">
           <p className="m-0 text-center text-white">
-            Copyright &copy; Your Website 2022
+            Copyright &copy; Your Website 2023
           </p>
         </div>
       </footer>

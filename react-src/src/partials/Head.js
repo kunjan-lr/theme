@@ -2,6 +2,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import logo from "../logo.svg";
+import Menu from './Menu';
 
 function Head() {
   const [data, setData] = useState(null);
@@ -21,7 +22,6 @@ function Head() {
   useEffect(() => {
     fetchNavdata()
     setLogininfo(JSON.parse(localStorage.getItem("customerinfo")))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
   return (
@@ -76,7 +76,7 @@ function Head() {
               <i className={active ? "fas fa-times" : "fas fa-bars"}></i>
             </div>
             <div>
-              <ul className={active ? "nav-menu active" : "navbar-nav ml-auto"} >
+              {/* <ul className={active ? "nav-menu active" : "navbar-nav ml-auto"} >
               {data && data.map((item, i) => {
 
                 const last = item.url.split("/");
@@ -90,7 +90,8 @@ function Head() {
                 </li>
                 )
               })}                
-              </ul>
+              </ul> */}
+              <Menu />
             </div>
           </div>
         </nav>
